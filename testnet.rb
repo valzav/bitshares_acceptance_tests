@@ -28,14 +28,20 @@ module BitShares
 
     def td(path); "#{TEMPDIR}/#{path}"; end
 
-    def create_client_node(dir, port, create=true)
-      clientnode = BitSharesNode.new @client_binary, name: dir, data_dir: td(dir), genesis: "test_genesis.json", http_port: port, logger: @logger
+    def create_client_node(dir, port, create_wallet=true)
+      clientnode = BitSharesNode.new @client_binary, name: dir, data_dir: td(dir), genesis: 'genesis.json', http_port: port, logger: @logger
       clientnode.start(false)
-      if create
+      if create_wallet
         clientnode.exec 'wallet_create', 'default', '123456789'
         clientnode.exec 'wallet_unlock', '9999999', '123456789'
       end
       return clientnode
+    end
+
+    def for_each_delegate
+      for i in 0..100
+        yield "delegate#{i}"
+      end
     end
 
     def full_bootstrap
@@ -46,7 +52,7 @@ module BitShares
       @delegate_node.exec 'wallet_create', 'default', '123456789'
       @delegate_node.exec 'wallet_unlock', '9999999', '123456789'
 
-      File.open('test_genesis.json.keypairs') do |f|
+      File.open('genesis.json.keypairs') do |f|
         counter = 0
         f.each_line do |l|
           pub_key, priv_key = l.split(' ')
@@ -63,7 +69,7 @@ module BitShares
       end
 
       balancekeys = []
-      File.open('test_genesis.json.balancekeys') do |f|
+      File.open('genesis.json.balancekeys') do |f|
         f.each_line do |l|
           balancekeys << l.split(' ')[1]
         end
@@ -74,25 +80,6 @@ module BitShares
 
       for i in 0..100
         @delegate_node.exec 'wallet_delegate_set_block_production', "delegate#{i}", true
-      end
-
-      @delegate_node.wait_new_block
-
-      for i in 0..100
-        @delegate_node.exec 'wallet_transfer', 1000000, 'XTS', "account#{i%2}",  "delegate#{i}"
-      end
-
-      @delegate_node.wait_new_block
-      #STDIN.getc
-
-      res = @delegate_node.exec 'wallet_account_transaction_history'
-      res.each do |trx|
-        next if trx['block_num'].to_i == 0
-        @delegate_node.exec 'wallet_scan_transaction', trx['trx_id']
-      end
-
-      for i in 0..100
-        @delegate_node.exec 'wallet_publish_price_feed', "delegate#{i}", 0.01, 'USD'
       end
 
       @delegate_node.exec 'wallet_backup_create', td('delegate_wallet_backup.json')
@@ -119,13 +106,16 @@ module BitShares
       recreate_dir td('alice')
       recreate_dir td('bob')
 
+      quick = File.exist?(td('delegate_wallet_backup.json'))
+
+      raise 'BTS_BUILD env variable is not set' unless ENV['BTS_BUILD']
       @client_binary = ENV['BTS_BUILD'] + '/programs/client/bitshares_client'
 
-      @delegate_node = BitSharesNode.new @client_binary, name: 'delegate', data_dir: td('delegate'), genesis: "test_genesis.json", http_port: 5690, delegate: true, logger: @logger
+      @delegate_node = BitSharesNode.new @client_binary, name: 'delegate', data_dir: td('delegate'), genesis: 'genesis.json', http_port: 5690, delegate: true, logger: @logger
       @delegate_node.start(false)
 
-      @alice_node = create_client_node('alice', 5691, false)
-      @bob_node = create_client_node('bob', 5692, false)
+      @alice_node = create_client_node('alice', 5691, !quick)
+      @bob_node = create_client_node('bob', 5692, !quick)
 
       nodes = [@delegate_node, @alice_node, @bob_node]
 
@@ -134,18 +124,27 @@ module BitShares
           #log "waiting for node #{n.name}"
           line = n.stdout_gets
           #log "#{n.name}: #{line}"
-          if line.include? "Starting HTTP JSON RPC server on port"
+          if line.nil?
+            puts "node #{n.name} is down"
+            nodes.delete_at(i)
+          end
+          if line and line.include? "Starting HTTP JSON RPC server on port"
             puts "node #{n.name} is up"
             nodes.delete_at(i)
           end
         end
       end
 
-      if File.exist? td ('delegate_wallet_backup.json') and ARGV[0] != 'full'
+      if quick
         quick_bootstrap
       else
         full_bootstrap
       end
+
+    end
+
+    def reset
+
     end
 
     def shutdown
@@ -154,7 +153,6 @@ module BitShares
       @alice_node.exec 'quit' if @alice_node
       @bob_node.exec 'quit' if @bob_node
     end
-
 
   end
 

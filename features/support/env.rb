@@ -7,7 +7,7 @@ puts 'bootstrapping testnet, please wait..'
 logger = Logger.new('features.log')
 logger.info '--------------------------------------'
 
-testnet = BitShares::TestNet.new(logger)
+testnet = BitShares::TestNet.new(nil)
 testnet.create
 testnet.alice_node.exec 'wallet_account_create', 'alice'
 testnet.alice_node.exec 'wallet_account_register', 'alice', 'genesis'
@@ -21,11 +21,20 @@ end
 alice = Actor.new(testnet.alice_node, 'alice')
 bob = Actor.new(testnet.bob_node, 'bob')
 
+Before do
+  #puts "---- before all"
+end
+
 Before do |scenario|
+  puts "---- before scenario"
   @logger = logger
   @testnet = testnet
   @alice = alice
   @bob = bob
+end
+
+Before('@reset') do
+  puts "---- before reset"
 end
 
 at_exit do
