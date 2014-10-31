@@ -4,6 +4,7 @@ require './testnet.rb'
 
 logger = Logger.new('features.log')
 logger.info '--------------------------------------'
+testnet = nil
 
 Actor = Struct.new(:node, :account) do
 end
@@ -14,7 +15,7 @@ end
 
 Before do |scenario|
   puts 'launching testnet, please wait..'
-  @testnet = BitShares::TestNet.new(logger)
+  testnet = @testnet = BitShares::TestNet.new(logger)
   @testnet.create
   @testnet.alice_node.exec 'wallet_account_create', 'alice'
   @testnet.alice_node.exec 'wallet_account_register', 'alice', 'angel'
@@ -33,8 +34,8 @@ After do |scenario|
 end
 
 at_exit do
-  if @testnet.running
-    @testnet.shutdown
+  if testnet.running
+    testnet.shutdown
     puts 'press any key to exit..'
     STDIN.getc
   end

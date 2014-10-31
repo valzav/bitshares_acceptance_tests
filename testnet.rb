@@ -147,10 +147,6 @@ module BitShares
       @running = true
     end
 
-    def reset
-
-    end
-
     def shutdown
       log 'shutdown'
       @delegate_node.exec 'quit'
