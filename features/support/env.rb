@@ -7,7 +7,7 @@ puts 'bootstrapping testnet, please wait..'
 logger = Logger.new('features.log')
 logger.info '--------------------------------------'
 
-testnet = BitShares::TestNet.new(nil)
+testnet = BitShares::TestNet.new(logger)
 testnet.create
 testnet.alice_node.exec 'wallet_account_create', 'alice'
 testnet.alice_node.exec 'wallet_account_register', 'alice', 'genesis'
@@ -46,7 +46,7 @@ end
 class ApiHelper
 
   def get_actor(name)
-    if name == 'my'
+    if name == 'my' or name == 'I'
       @current_actor
     elsif name == 'Alice' or name == "Alice's"
       @alice
@@ -72,7 +72,7 @@ class ApiHelper
         end
       end
     end
-    return nil
+    return 0
   end
 
 end
