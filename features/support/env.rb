@@ -10,9 +10,9 @@ logger.info '--------------------------------------'
 testnet = BitShares::TestNet.new(logger)
 testnet.create
 testnet.alice_node.exec 'wallet_account_create', 'alice'
-testnet.alice_node.exec 'wallet_account_register', 'alice', 'genesis'
+testnet.alice_node.exec 'wallet_account_register', 'alice', 'angel'
 testnet.bob_node.exec 'wallet_account_create', 'bob'
-testnet.bob_node.exec 'wallet_account_register', 'bob', 'genesis'
+testnet.bob_node.exec 'wallet_account_register', 'bob', 'angel'
 testnet.alice_node.wait_new_block
 
 Actor = Struct.new(:node, :account) do

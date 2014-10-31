@@ -18,6 +18,9 @@ module BitShares
       @delegate_node = nil
       @alice_node = nil
       @bob_node = nil
+
+      raise 'BTS_BUILD env variable is not set' unless ENV['BTS_BUILD']
+      @client_binary = ENV['BTS_BUILD'] + '/programs/client/bitshares_client'
     end
 
     def log(s)
@@ -85,11 +88,11 @@ module BitShares
       @delegate_node.exec 'wallet_backup_create', td('delegate_wallet_backup.json')
 
       #@alice_node = create_client_node('alice', 5691)
-      @alice_node.exec 'wallet_import_private_key', balancekeys[2], "genesis", true, true
+      @alice_node.exec 'wallet_import_private_key', balancekeys[2], 'angel', true, true
       @alice_node.exec 'wallet_backup_create', td('alice_wallet_backup.json')
 
       #@bob_node = create_client_node('bob', 5692)
-      @bob_node.exec 'wallet_import_private_key', balancekeys[3], "genesis", true, true
+      @bob_node.exec 'wallet_import_private_key', balancekeys[3], 'angel', true, true
       @bob_node.exec 'wallet_backup_create', td('bob_wallet_backup.json')
     end
 
@@ -108,9 +111,6 @@ module BitShares
 
       quick = File.exist?(td('delegate_wallet_backup.json'))
 
-      raise 'BTS_BUILD env variable is not set' unless ENV['BTS_BUILD']
-      @client_binary = ENV['BTS_BUILD'] + '/programs/client/bitshares_client'
-
       @delegate_node = BitSharesNode.new @client_binary, name: 'delegate', data_dir: td('delegate'), genesis: 'genesis.json', http_port: 5690, delegate: true, logger: @logger
       @delegate_node.start(false)
 
@@ -128,7 +128,7 @@ module BitShares
             puts "node #{n.name} is down"
             nodes.delete_at(i)
           end
-          if line and line.include? "Starting HTTP JSON RPC server on port"
+          if line and line.include? 'Starting HTTP JSON RPC server on port'
             puts "node #{n.name} is up"
             nodes.delete_at(i)
           end
@@ -148,7 +148,7 @@ module BitShares
     end
 
     def shutdown
-      log "shutdown"
+      log 'shutdown'
       @delegate_node.exec 'quit'
       @alice_node.exec 'quit' if @alice_node
       @bob_node.exec 'quit' if @bob_node
@@ -161,7 +161,7 @@ end
 if $0 == __FILE__
   testnet = BitShares::TestNet.new
   testnet.create
-  STDIN.getc
+  #STDIN.getc
   testnet.shutdown
-  puts "finished"
+  puts 'finished'
 end

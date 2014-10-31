@@ -2,9 +2,9 @@ Given(/^I'm (\w+)$/) do |name|
   @current_actor = get_actor(name)
 end
 
-Given(/^(\w+) received (\d+) ([A-Z]+) from genesis$/) do |name, amount, currency|
+Given(/^(\w+) received (\d+) ([A-Z]+) from angel/) do |name, amount, currency|
   actor = get_actor(name)
-  actor.node.exec 'wallet_transfer', amount, currency, 'genesis', actor.account
+  actor.node.exec 'wallet_transfer', amount, currency, 'angel', actor.account
   #actor.node.exec 'rescan'
 end
 
