@@ -15,7 +15,9 @@ Scenario: Alice sends 100 XTS to Bob
 
 Scenario: Bob sends 50 XTS to Alice
   Given I'm Bob
+  And I received 500 XTS from angel
+  And wait for next block
   When I send 50 XTS to Alice
   And wait for next block
-  Then Alice's balance should be 950 XTS minus fee
-  And Bob's balance should be 50 XTS minus fee
+  Then Alice's balance should be 50 XTS
+  And Bob's balance should be 450 XTS minus fee

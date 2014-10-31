@@ -22,4 +22,3 @@ Scenario: Alice shorts BitUSD and sells to Bob, then Bob shorts and Alice covers
     | cover_order | 30000      | 10            |
 
   # TODO: complete scenario - Bob shorts and Alice covers
-  

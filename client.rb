@@ -9,8 +9,6 @@ class BitSharesNode
 
   class Error < RuntimeError; end
 
-  @@p2p_port = 10000 + Random.rand(10000)
-
   def initialize(client_binary, options)
     @client_binary, @options = client_binary, options
     @name = @options[:name]
@@ -27,9 +25,9 @@ class BitSharesNode
     @command << " --httpport=#{@options[:http_port]}"
     @command << " --upnp=false"
     if @options[:delegate]
-      @command << " --p2p-port=#{@@p2p_port}"
+      @command << " --p2p-port=#{@options[:p2p_port]}"
     else
-      @command << " --connect-to=127.0.0.1:#{@@p2p_port}"
+      @command << " --connect-to=127.0.0.1:#{@options[:p2p_port]}"
     end
     @command << " --disable-default-peers"
   end
@@ -39,7 +37,7 @@ class BitSharesNode
   end
   
   def start(wait=true)
-    log "starting node '#{@name}', http port: #{@options[:http_port]}, p2p port: #{@@p2p_port} \n#{@command}"
+    log "starting node '#{@name}', http port: #{@options[:http_port]}, p2p port: #{@options[:p2p_port]} \n#{@command}"
 
     stdin, out, wait_thr = Open3.popen2e(@command)
     @handler = {stdin: stdin, out: out, wait_thr: wait_thr}

@@ -9,7 +9,7 @@ module BitShares
 
   class TestNet
 
-    attr_reader :delegate_node, :alice_node, :bob_node
+    attr_reader :delegate_node, :alice_node, :bob_node, :running
 
     TEMPDIR = 'tmp'
 
@@ -18,6 +18,8 @@ module BitShares
       @delegate_node = nil
       @alice_node = nil
       @bob_node = nil
+      @p2p_port = 10000 + Random.rand(10000)
+      @running = false
 
       raise 'BTS_BUILD env variable is not set' unless ENV['BTS_BUILD']
       @client_binary = ENV['BTS_BUILD'] + '/programs/client/bitshares_client'
@@ -32,7 +34,7 @@ module BitShares
     def td(path); "#{TEMPDIR}/#{path}"; end
 
     def create_client_node(dir, port, create_wallet=true)
-      clientnode = BitSharesNode.new @client_binary, name: dir, data_dir: td(dir), genesis: 'genesis.json', http_port: port, logger: @logger
+      clientnode = BitSharesNode.new @client_binary, name: dir, data_dir: td(dir), genesis: 'genesis.json', http_port: port, p2p_port: @p2p_port, logger: @logger
       clientnode.start(false)
       if create_wallet
         clientnode.exec 'wallet_create', 'default', '123456789'
@@ -111,7 +113,7 @@ module BitShares
 
       quick = File.exist?(td('delegate_wallet_backup.json'))
 
-      @delegate_node = BitSharesNode.new @client_binary, name: 'delegate', data_dir: td('delegate'), genesis: 'genesis.json', http_port: 5690, delegate: true, logger: @logger
+      @delegate_node = BitSharesNode.new @client_binary, name: 'delegate', data_dir: td('delegate'), genesis: 'genesis.json', http_port: 5690, p2p_port: @p2p_port, delegate: true, logger: @logger
       @delegate_node.start(false)
 
       @alice_node = create_client_node('alice', 5691, !quick)
@@ -125,11 +127,12 @@ module BitShares
           line = n.stdout_gets
           #log "#{n.name}: #{line}"
           if line.nil?
-            puts "node #{n.name} is down"
+            puts "Error: node #{n.name} is down"
+            log "Error: node #{n.name} is down"
             nodes.delete_at(i)
           end
           if line and line.include? 'Starting HTTP JSON RPC server on port'
-            puts "node #{n.name} is up"
+            log "node #{n.name} is up"
             nodes.delete_at(i)
           end
         end
@@ -141,6 +144,7 @@ module BitShares
         full_bootstrap
       end
 
+      @running = true
     end
 
     def reset
@@ -152,6 +156,7 @@ module BitShares
       @delegate_node.exec 'quit'
       @alice_node.exec 'quit' if @alice_node
       @bob_node.exec 'quit' if @bob_node
+      @running = false
     end
 
   end

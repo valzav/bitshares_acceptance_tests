@@ -2,45 +2,42 @@ require 'rspec/expectations'
 require 'logger'
 require './testnet.rb'
 
-puts 'launching testnet, please wait..'
-
 logger = Logger.new('features.log')
 logger.info '--------------------------------------'
-
-testnet = BitShares::TestNet.new(logger)
-testnet.create
-testnet.alice_node.exec 'wallet_account_create', 'alice'
-testnet.alice_node.exec 'wallet_account_register', 'alice', 'angel'
-testnet.bob_node.exec 'wallet_account_create', 'bob'
-testnet.bob_node.exec 'wallet_account_register', 'bob', 'angel'
-testnet.alice_node.wait_new_block
 
 Actor = Struct.new(:node, :account) do
 end
 
-alice = Actor.new(testnet.alice_node, 'alice')
-bob = Actor.new(testnet.bob_node, 'bob')
-
 Before do
-  puts "---- before all"
+  #puts "---- before all"
 end
 
 Before do |scenario|
-  puts "---- before scenario"
+  puts 'launching testnet, please wait..'
+  @testnet = BitShares::TestNet.new(logger)
+  @testnet.create
+  @testnet.alice_node.exec 'wallet_account_create', 'alice'
+  @testnet.alice_node.exec 'wallet_account_register', 'alice', 'angel'
+  @testnet.bob_node.exec 'wallet_account_create', 'bob'
+  @testnet.bob_node.exec 'wallet_account_register', 'bob', 'angel'
+  @testnet.alice_node.wait_new_block
+
   @logger = logger
-  @testnet = testnet
-  @alice = alice
-  @bob = bob
+  @alice = Actor.new(@testnet.alice_node, 'alice')
+  @bob = Actor.new(@testnet.bob_node, 'bob')
 end
 
-Before('@reset') do
-  #puts "---- before reset"
+After do |scenario|
+  puts 'shutting down testnet..'
+  @testnet.shutdown
 end
 
 at_exit do
-  puts "press any key to exit.."
-  STDIN.getc
-  testnet.shutdown
+  if @testnet.running
+    @testnet.shutdown
+    puts 'press any key to exit..'
+    STDIN.getc
+  end
 end
 
 class ApiHelper
