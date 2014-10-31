@@ -14,10 +14,25 @@ Next define environment variable BTS_BUILD with path to your bitshares toolkit's
 
   $ export BTS_BUILD=/home/user/bitshares/bitshares_toolkit
   
-## Using
+## Usage
   
 Bootstrap the test net:
 
   $ ruby testnet.rb
   
 After a little while your test net is ready and you can run tests (features) via 'cucumber' command.
+
+Please note that after all the tests it doesn't exit until you press any key, while it's running you can access the nodes via http on the following ports:
+
+delegate node: port 5690
+
+alice's node: port 5691
+
+bob's node: port 5692
+
+
+You can access these nodes via web wallet if you create htdocs symlink to web_wallet/generated or to web_wallet/build, e.g. 
+
+  $ ln -s ../web_wallet/generated htdocs
+  
+And open http://localhost:5690 (or 5691/5692) in your browser.

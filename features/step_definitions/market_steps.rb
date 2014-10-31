@@ -7,7 +7,6 @@ Given(/^feed price is (.+) ([A-Z]+)\/XTS$/) do |price, symbol|
 end
 
 When(/^I short (\d+) ([A-Z]+), interest rate (\d+)%$/) do |amount, symbol, ir|
-  @current_actor.node.wait_new_block
   #@current_actor.node.exec 'rescan'
   collateral = 2 * amount.to_f/@feed_price
   @current_actor.node.exec 'wallet_market_submit_short', @current_actor.account, collateral, 'XTS', ir, symbol, 0
@@ -32,34 +31,39 @@ Then(/^Bob's balance should increase by (\d+) USD$/) do |arg1|
   pending # express the regexp above with the code you wish you had
 end
 
-Then(/^I should see margin order$/) do
-  pending # express the regexp above with the code you wish you had
+Then(/^I should see the following ([A-Z]+)\/([A-Z]+) market orders?:$/) do |symbol1, symbol2, orders_table|
+    orders_table.hashes.each do |o|
+      orders = @current_actor.node.exec 'wallet_market_order_list', symbol1, symbol2, 0
+      found = find_order(orders, o)
+      raise "Order not found: #{o} in #{orders}" unless found
+    end
+end
+
 #   >> wallet_market_order_list USD XTS 0 alice
 #
 # [[
-#     "5d7aa1eebcdce55ab21c2e76beed8c1c7ef40afa",{
-#       "type": "short_order",
+#     "342f81efc92e0e1fed0397571f7846021ae08b34",{
+#       "type": "cover_order",
 #       "market_index": {
 #         "order_price": {
-#           "ratio": "0.1",
+#           "ratio": "0.0005",
 #           "quote_asset_id": 7,
 #           "base_asset_id": 0
 #         },
-#         "owner": "XTSG11EWwFabSzaBc3Gn2xG9vjzYUP4sN1iZ"
+#         "owner": "XTSBuC6mbkG3X6AZg1Wab1QmXa7xMCRamT6F"
 #       },
 #       "state": {
-#         "balance": 2000000000,
+#         "balance": 1000000,
 #         "short_price_limit": null,
-#         "last_update": "20141030T212316"
+#         "last_update": "19700101T000000"
 #       },
-#       "collateral": 2000000000,
+#       "collateral": 3000000000,
 #       "interest_rate": {
 #         "ratio": "0.1",
 #         "quote_asset_id": 7,
 #         "base_asset_id": 0
 #       },
-#       "expiration": null
+#       "expiration": "20141031T205340"
 #     }
 #   ]
 # ]
-end

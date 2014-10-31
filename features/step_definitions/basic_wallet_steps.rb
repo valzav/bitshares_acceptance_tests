@@ -5,7 +5,6 @@ end
 Given(/^(\w+) received (\d+) ([A-Z]+) from angel/) do |name, amount, currency|
   actor = get_actor(name)
   actor.node.exec 'wallet_transfer', amount, currency, 'angel', actor.account
-  #actor.node.exec 'rescan'
 end
 
 When(/^I send (\d+) ([A-Z]+) to (\w+)$/) do |amount, currency, account|
