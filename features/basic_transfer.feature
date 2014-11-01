@@ -6,18 +6,18 @@ Feature: Transfer funds from one account to another
 Scenario: Alice sends 100 XTS to Bob
   Given I'm Alice
   And I received 1000 XTS from angel
-  And wait for next block
-  And print XTS balance
+  And I wait for one block
+  And I print XTS balance
   When I send 100 XTS to Bob
-  And wait for next block
-  Then my balance should be 900 XTS minus fee
-  And Bob's balance should be 100 XTS
+  And I wait for one block
+  Then I should have 900 XTS minus fee
+  And Bob should have 100 XTS
 
 Scenario: Bob sends 50 XTS to Alice
   Given I'm Bob
   And I received 500 XTS from angel
-  And wait for next block
+  And I wait for one block
   When I send 50 XTS to Alice
-  And wait for next block
-  Then Alice's balance should be 50 XTS
-  And Bob's balance should be 450 XTS minus fee
+  And I wait for one block
+  Then Alice should have 50 XTS
+  And I should have 450 XTS minus fee

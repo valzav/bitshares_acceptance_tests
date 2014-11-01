@@ -43,15 +43,30 @@ class ApiHelper
     return 0
   end
 
-  def find_order(orders, o)
-    #puts 'find order'
+  def exist_order(orders, o)
+    #puts 'exist_order'
     #puts "order: #{o.inspect}"
     #puts "orders: #{orders.inspect}"
+    @last_order_id = nil
     orders.each do |e|
       order = e[1]
       if order['type'] == o['Type'] and
-         order['collateral'].to_f/100000.0 == o['Collateral'].to_f and
-         order['interest_rate']['ratio'].to_f * 100.0 == o['Interest Rate'].to_f
+        order['collateral'].to_f/100000.0 == o['Collateral'].to_f and
+        order['interest_rate']['ratio'].to_f * 100.0 == o['Interest Rate'].to_f
+        @last_order_id = e[0]
+        return true
+      end
+    end
+    return false
+  end
+
+  def exist_order_type(orders, type)
+    puts 'find_first_order_of_type'
+    puts "orders: #{orders.inspect}"
+    @last_order_id = nil
+    orders.each do |e|
+      order = e[1]
+      if order['type'] == type
         return true
       end
     end
