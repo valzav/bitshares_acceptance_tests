@@ -2,7 +2,9 @@
 
 This repository holds the BitShares acceptance tests implemented on top of Ruby's cucumber framework.
 
+
 ## Installation
+
 Install Ruby and bundler gem:
 
   $ apt-get install ruby
@@ -14,6 +16,7 @@ Next define environment variable BTS_BUILD with path to your bitshares toolkit's
 
   $ export BTS_BUILD=/home/user/bitshares/bitshares_toolkit
   
+  
 ## Usage
   
 Bootstrap the test net:
@@ -22,16 +25,14 @@ Bootstrap the test net:
   
 After a little while your test net is ready and you can run tests (features) via 'cucumber' command.
 
-Please note that after all the tests it doesn't exit until you press any key, while it's running you can access the nodes via http on the following ports:
 
-delegate node: port 5690
+### Note
 
-alice's node: port 5691
+Testnet is being recreated from scratch before each scenario, so each scenario is started with a clean state.
+  
+If you want to pause scenarios execution and keep testnet running after scenario to inspect the nodes via http rpc, insert @pause tag before scenario.
 
-bob's node: port 5692
-
-
-You can access these nodes via web wallet if you create htdocs symlink to web_wallet/generated or to web_wallet/build, e.g. 
+In order to access the nodes via web wallet you need to create htdocs symlink to web_wallet/generated or to web_wallet/build, e.g. 
 
   $ ln -s ../web_wallet/generated htdocs
   

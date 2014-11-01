@@ -2,46 +2,16 @@ require 'rspec/expectations'
 require 'logger'
 require './testnet.rb'
 
-logger = Logger.new('features.log')
-logger.info '--------------------------------------'
-testnet = nil
-
 Actor = Struct.new(:node, :account) do
 end
 
-Before do
-  #puts "---- before all"
-end
-
-Before do |scenario|
-  puts 'launching testnet, please wait..'
-  testnet = @testnet = BitShares::TestNet.new(logger)
-  @testnet.create
-  @testnet.alice_node.exec 'wallet_account_create', 'alice'
-  @testnet.alice_node.exec 'wallet_account_register', 'alice', 'angel'
-  @testnet.bob_node.exec 'wallet_account_create', 'bob'
-  @testnet.bob_node.exec 'wallet_account_register', 'bob', 'angel'
-  @testnet.alice_node.wait_new_block
-
-  @logger = logger
-  @alice = Actor.new(@testnet.alice_node, 'alice')
-  @bob = Actor.new(@testnet.bob_node, 'bob')
-end
-
-After do |scenario|
-  puts 'shutting down testnet..'
-  @testnet.shutdown
-end
-
-at_exit do
-  if testnet.running
-    testnet.shutdown
-    puts 'press any key to exit..'
-    STDIN.getc
-  end
-end
-
 class ApiHelper
+
+  def initialize
+    @logger = Logger.new('features.log')
+    @logger.info '--------------------------------------'
+    @pause = false
+  end
 
   def get_actor(name)
     if name == 'my' or name == 'I'
@@ -89,10 +59,41 @@ class ApiHelper
   end
 
   def wait
-    puts 'waiting next block'
+    STDOUT.puts 'waiting next block'
     @testnet.delegate_node.wait_new_block
   end
 
+end
+
+Before('@pause') do
+  @pause = true
+end
+
+Before do |scenario|
+  STDOUT.puts 'launching testnet, please wait..'
+  @testnet = BitShares::TestNet.new(@logger)
+  @testnet.create
+  @testnet.alice_node.exec 'wallet_account_create', 'alice'
+  @testnet.alice_node.exec 'wallet_account_register', 'alice', 'angel'
+  @testnet.bob_node.exec 'wallet_account_create', 'bob'
+  @testnet.bob_node.exec 'wallet_account_register', 'bob', 'angel'
+  @testnet.alice_node.wait_new_block
+  @alice = Actor.new(@testnet.alice_node, 'alice')
+  @bob = Actor.new(@testnet.bob_node, 'bob')
+end
+
+After do |scenario|
+  if @pause
+    STDOUT.puts '@pause: use the following urls to access the nodes:'
+    STDOUT.puts "delegate node: #{@testnet.delegate_node.url}"
+    STDOUT.puts "alice node: #{@testnet.alice_node.url}"
+    STDOUT.puts "bob node: #{@testnet.bob_node.url}"
+    STDOUT.puts 'press any key to shutdown testnet and continue..'
+    STDIN.getc
+  end
+  @pause = false
+  STDOUT.puts 'shutting down testnet..'
+  @testnet.shutdown
 end
 
 World( RSpec::Matchers )

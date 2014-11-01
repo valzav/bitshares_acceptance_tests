@@ -5,31 +5,33 @@ require_relative './bitshares_api.rb'
 
 class BitSharesNode
 
-  attr_reader :rpc_instance, :command, :name
+  attr_reader :rpc_instance, :command, :name, :url
 
   class Error < RuntimeError; end
 
   def initialize(client_binary, options)
     @client_binary, @options = client_binary, options
-    @name = @options[:name]
-    @logger = @options[:logger]
+    @name = options[:name]
+    @logger = options[:logger]
     @handler = nil
 
     @command = @client_binary.clone
-    @command << " --data-dir #{@options[:data_dir]}"
-    @command << " --genesis-config #{@options[:genesis]}"
+    @command << " --data-dir #{options[:data_dir]}"
+    @command << " --genesis-config #{options[:genesis]}"
     @command << " --min-delegate-connection-count=0"
     @command << " --server"
     @command << " --rpcuser=user"
     @command << " --rpcpassword=pass"
-    @command << " --httpport=#{@options[:http_port]}"
+    @command << " --httpport=#{options[:http_port]}"
     @command << " --upnp=false"
-    if @options[:delegate]
-      @command << " --p2p-port=#{@options[:p2p_port]}"
+    if options[:delegate]
+      @command << " --p2p-port=#{options[:p2p_port]}"
     else
-      @command << " --connect-to=127.0.0.1:#{@options[:p2p_port]}"
+      @command << " --connect-to=127.0.0.1:#{options[:p2p_port]}"
     end
     @command << " --disable-default-peers"
+    
+    @url = "http://localhost:#{options[:http_port]}"
   end
 
   def log(s)

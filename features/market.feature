@@ -3,6 +3,7 @@ Feature: Short BitUSD
   I want to short BitUSD
   So I can profit from XTS price rise
 
+@pause
 Scenario: Alice shorts BitUSD and sells to Bob, then Bob shorts and Alice covers
   Given I'm Alice
   And feed price is 0.01 USD/XTS
