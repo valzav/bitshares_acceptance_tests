@@ -67,7 +67,7 @@ module BitShares
           result = JSON.parse(response.body)
           if result['error']
             if !@options[:ignore_errors]
-              raise Error, result['error']
+              raise Error, result['error'], "#{method} #{params ? params.join(' ') : ''}"
             else
               log "Error: #{result['error']}"
               STDERR.puts "Error: #{result['error']}\n"

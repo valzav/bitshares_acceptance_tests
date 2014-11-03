@@ -15,7 +15,7 @@ When(/^(\w+) shorts? ([A-Z]+), collateral ([\d,\.]+) ([A-Z]+), interest rate ([\
   step "#{name} short #{symbol}, collateral #{collateral} #{collateral_symbol}, interest rate #{ir}%, price limit 0.0 USD/XTS"
 end
 
-When(/^(\w+) submits? (bid|ask) to sell ([\d,\.]+) ([A-Z]+) at ([\d\.]+) ([A-Z]+)\/([A-Z]+)$/) do |name, order_type, amount, symbol, price, ps1, ps2|
+When(/^(\w+) submits? (bid|ask) for ([\d,\.]+) ([A-Z]+) at ([\d\.]+) ([A-Z]+)\/([A-Z]+)$/) do |name, order_type, amount, symbol, price, ps1, ps2|
   actor = get_actor(name)
   #actor.node.exec 'rescan'
   data = actor.node.exec 'wallet_account_balance', actor.account
@@ -23,7 +23,7 @@ When(/^(\w+) submits? (bid|ask) to sell ([\d,\.]+) ([A-Z]+) at ([\d\.]+) ([A-Z]+
   #puts "#{actor.account}'s balance: #{balance} #{symbol}"
   amount = to_f(amount)
   if order_type == 'bid'
-    actor.node.exec 'wallet_market_submit_bid', actor.account, amount, symbol, price, ps2
+    actor.node.exec 'wallet_market_submit_bid', actor.account, amount, symbol, price, ps1
   elsif order_type == 'ask'
     actor.node.exec 'wallet_market_submit_ask', actor.account, amount, symbol, price, ps1
   else

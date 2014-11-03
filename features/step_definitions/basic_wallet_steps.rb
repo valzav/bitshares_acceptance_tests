@@ -11,25 +11,28 @@ When(/^I send ([\d,\.]+) ([A-Z]+) to (\w+)$/) do |amount, currency, account|
   @current_actor.node.exec 'wallet_transfer', to_f(amount), currency, @current_actor.account, account.downcase
 end
 
-When(/^I wait for (one|\d+) blocks?$/) do |blocks|
+When(/^(\w+) waits? for (one|\d+) blocks?$/) do |name, blocks|
+  actor = get_actor(name)
   blocks = if blocks == 'one' then 1 else blocks.to_i end
   (1..blocks).each do
-    @current_actor.node.wait_new_block
+    actor.node.wait_new_block
   end
 end
 
-When(/^I print ([A-Z]+) balance$/) do |symbol|
-  data = @current_actor.node.exec 'wallet_account_balance', @current_actor.account
-  balance = get_balance(data, @current_actor.account, symbol)
+When(/^([\w]+) prints? ([A-Z]+) balance$/) do |name, symbol|
+  actor = get_actor(name)
+  data = @current_actor.node.exec 'wallet_account_balance', actor.account
+  STDOUT.puts data
+  balance = get_balance(data, actor.account, symbol)
   puts "balance: #{balance} #{symbol}"
 end
 
-Then(/^([\w]+) should have\s?(around)? ([\d,\.]+) ([A-Z]+)\s?(.*)$/) do |name, around, amount, currency, minus_fee|
+Then(/^([\w]+) should have\s?(around)? ([\d,\.]+) ([A-Z]+)\s?(minus fee|minus \d+\*fee)?$/) do |name, around, amount, currency, minus_fee|
   amount = to_f(amount)
   actor = get_actor(name)
   data = actor.node.exec 'wallet_account_balance', actor.account
   balance = get_balance(data, actor.account, currency)
-  if minus_fee.length > 0
+  if minus_fee and minus_fee.length > 0
     m = /(\d+)\s?\*\s?fee/.match(minus_fee)
     multiplier = if m and m[1] then m[1].to_i else 1 end
     amount = amount - multiplier * 0.5
@@ -39,4 +42,9 @@ Then(/^([\w]+) should have\s?(around)? ([\d,\.]+) ([A-Z]+)\s?(.*)$/) do |name, a
     balance = balance.to_f.round
   end
   expect(balance.to_f).to eq(amount)
+end
+
+Then(/^([\w]+) should have\s?(around)? ([\d,\.]+) ([A-Z]+) and ([\d,\.]+) ([A-Z]+)$/) do |name, around, amount1, currency1, amount2, currency2|
+  step "#{name} should have #{around} #{amount1} #{currency1}"
+  step "#{name} should have #{around} #{amount2} #{currency2}"
 end

@@ -51,8 +51,8 @@ class Helper
     orders.each do |e|
       order = e[1]
       if order['type'] == o['Type'] and
-        order['collateral'].to_f/100000.0 == o['Collateral'].to_f and
-        order['interest_rate']['ratio'].to_f * 100.0 == o['Interest Rate'].to_f
+        (o['Collateral'] and order['collateral'].to_f/100000.0 == o['Collateral'].to_f) and
+        (o['Interest Rate'] and order['interest_rate']['ratio'].to_f * 100.0 == o['Interest Rate'].to_f)
         @last_order_id = e[0]
         return true
       end
@@ -99,6 +99,7 @@ Before do |scenario|
   @testnet.alice_node.wait_new_block
   @alice = Actor.new(@testnet.alice_node, 'alice')
   @bob = Actor.new(@testnet.bob_node, 'bob')
+  sleep(2)
 end
 
 After do |scenario|
