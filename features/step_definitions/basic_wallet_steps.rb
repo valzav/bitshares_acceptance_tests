@@ -21,7 +21,7 @@ end
 When(/^I print ([A-Z]+) balance$/) do |symbol|
   data = @current_actor.node.exec 'wallet_account_balance', @current_actor.account
   balance = get_balance(data, @current_actor.account, symbol)
-  puts "Balance: #{balance} #{symbol}"
+  puts "balance: #{balance} #{symbol}"
 end
 
 Then(/^([\w]+) should have\s?(around)? ([\d,\.]+) ([A-Z]+)\s?(.*)$/) do |name, around, amount, currency, minus_fee|
@@ -38,5 +38,5 @@ Then(/^([\w]+) should have\s?(around)? ([\d,\.]+) ([A-Z]+)\s?(.*)$/) do |name, a
     amount = amount.round
     balance = balance.to_f.round
   end
-  expect(amount).to eq(balance.to_f)
+  expect(balance.to_f).to eq(amount)
 end

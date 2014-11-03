@@ -6,11 +6,13 @@ Given(/^feed price is (.+) ([A-Z]+)\/XTS$/) do |price, symbol|
   end
 end
 
-When(/^(\w+) shorts? ([\d,\.]+) ([A-Z]+) paying (\d+)% interest rate$/) do |name, amount, symbol, ir|
+When(/^(\w+) shorts? ([A-Z]+), collateral ([\d,\.]+) ([A-Z]+), interest rate ([\d\.]+)%, price limit ([\d\.]+) ([A-Z]+)\/([A-Z]+)$/) do |name, symbol, collateral, collateral_symbol, ir, price_limit, ps1, ps2|
   actor = get_actor(name)
-  #@current_actor.node.exec 'rescan'
-  collateral = 2 * to_f(amount)/@feed_price
-  actor.node.exec 'wallet_market_submit_short', actor.account, collateral, 'XTS', ir, symbol, 0.01
+  actor.node.exec 'wallet_market_submit_short', actor.account, to_f(collateral), collateral_symbol, ir, symbol, price_limit
+end
+
+When(/^(\w+) shorts? ([A-Z]+), collateral ([\d,\.]+) ([A-Z]+), interest rate ([\d\.]+)%$/) do |name, symbol, collateral, collateral_symbol, ir|
+  step "#{name} short #{symbol}, collateral #{collateral} #{collateral_symbol}, interest rate #{ir}%, price limit 0.0 USD/XTS"
 end
 
 When(/^(\w+) submits? (bid|ask) to sell ([\d,\.]+) ([A-Z]+) at ([\d\.]+) ([A-Z]+)\/([A-Z]+)$/) do |name, order_type, amount, symbol, price, ps1, ps2|
@@ -18,14 +20,14 @@ When(/^(\w+) submits? (bid|ask) to sell ([\d,\.]+) ([A-Z]+) at ([\d\.]+) ([A-Z]+
   #actor.node.exec 'rescan'
   data = actor.node.exec 'wallet_account_balance', actor.account
   balance = get_balance(data, actor.account, symbol)
-  puts "#{actor.account}'s balance: #{balance} #{symbol}"
+  #puts "#{actor.account}'s balance: #{balance} #{symbol}"
   amount = to_f(amount)
   if order_type == 'bid'
     actor.node.exec 'wallet_market_submit_bid', actor.account, amount, symbol, price, ps2
   elsif order_type == 'ask'
     actor.node.exec 'wallet_market_submit_ask', actor.account, amount, symbol, price, ps1
   else
-    raise "Uknown order type: #{order_type}"
+    raise "Unknown order type: #{order_type}"
   end
 end
 
