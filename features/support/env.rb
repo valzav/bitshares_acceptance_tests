@@ -61,8 +61,8 @@ class Helper
   end
 
   def exist_order_type(orders, type)
-    puts 'find_first_order_of_type'
-    puts "orders: #{orders.inspect}"
+    #puts 'find_first_order_of_type'
+    #puts "orders: #{orders.inspect}"
     @last_order_id = nil
     orders.each do |e|
       order = e[1]

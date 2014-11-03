@@ -105,22 +105,7 @@ module BitShares
       @bob_node.exec 'wallet_backup_restore', td('bob_wallet_backup.json'), 'default', '123456789'
     end
 
-    def create
-      Dir.mkdir TEMPDIR unless Dir.exist? TEMPDIR
-      recreate_dir td('delegate')
-      recreate_dir td('alice')
-      recreate_dir td('bob')
-
-      quick = File.exist?(td('delegate_wallet_backup.json'))
-
-      @delegate_node = BitSharesNode.new @client_binary, name: 'delegate', data_dir: td('delegate'), genesis: 'genesis.json', http_port: 5690, p2p_port: @p2p_port, delegate: true, logger: @logger
-      @delegate_node.start(false)
-
-      @alice_node = create_client_node('alice', 5691, !quick)
-      @bob_node = create_client_node('bob', 5692, !quick)
-
-      nodes = [@delegate_node, @alice_node, @bob_node]
-
+    def wait_nodes(nodes)
       while nodes.length > 0
         nodes.each_with_index do |n, i|
           #log "waiting for node #{n.name}"
@@ -137,6 +122,36 @@ module BitShares
           end
         end
       end
+    end
+
+    def start
+      @delegate_node = BitSharesNode.new @client_binary, name: 'delegate', data_dir: td('delegate'), genesis: 'genesis.json', http_port: 5690, p2p_port: @p2p_port, delegate: true, logger: @logger
+      @delegate_node.start(false)
+
+      @alice_node = BitSharesNode.new @client_binary, name: 'alice', data_dir: td('alice'), genesis: 'genesis.json', http_port: 5691, p2p_port: @p2p_port, logger: @logger
+      @alice_node.start(false)
+
+      @bob_node = BitSharesNode.new @client_binary, name: 'bob', data_dir: td('bob'), genesis: 'genesis.json', http_port: 5692, p2p_port: @p2p_port, logger: @logger
+      @bob_node.start(false)
+
+      wait_nodes([@delegate_node, @alice_node, @bob_node])
+    end
+
+    def create
+      Dir.mkdir TEMPDIR unless Dir.exist? TEMPDIR
+      recreate_dir td('delegate')
+      recreate_dir td('alice')
+      recreate_dir td('bob')
+
+      quick = File.exist?(td('delegate_wallet_backup.json'))
+
+      @delegate_node = BitSharesNode.new @client_binary, name: 'delegate', data_dir: td('delegate'), genesis: 'genesis.json', http_port: 5690, p2p_port: @p2p_port, delegate: true, logger: @logger
+      @delegate_node.start(false)
+
+      @alice_node = create_client_node('alice', 5691, !quick)
+      @bob_node = create_client_node('bob', 5692, !quick)
+
+      wait_nodes([@delegate_node, @alice_node, @bob_node])
 
       if quick
         quick_bootstrap
@@ -161,8 +176,13 @@ end
 
 if $0 == __FILE__
   testnet = BitShares::TestNet.new
-  testnet.create
-  #STDIN.getc
+  if ARGV[0] == '--create'
+    testnet.create
+  else
+    testnet.start
+  end
+  puts 'testnet is running, press any key to exit..'
+  STDIN.getc
   testnet.shutdown
   puts 'finished'
 end
