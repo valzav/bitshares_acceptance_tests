@@ -6,19 +6,20 @@ Given(/^feed price is (.+) ([A-Z]+)\/XTS$/) do |price, symbol|
   end
 end
 
-When(/^(\w+) shorts? (\d+) ([A-Z]+) paying (\d+)% interest rate$/) do |name, amount, symbol, ir|
+When(/^(\w+) shorts? ([\d,\.]+) ([A-Z]+) paying (\d+)% interest rate$/) do |name, amount, symbol, ir|
   actor = get_actor(name)
   #@current_actor.node.exec 'rescan'
-  collateral = 2 * amount.to_f/@feed_price
-  actor.node.exec 'wallet_market_submit_short', actor.account, collateral, 'XTS', ir, symbol, 0
+  collateral = 2 * to_f(amount)/@feed_price
+  actor.node.exec 'wallet_market_submit_short', actor.account, collateral, 'XTS', ir, symbol, 0.01
 end
 
-When(/^(\w+) submits? (bid|ask) to sell (\d+) ([A-Z]+) at ([\d\.]+) ([A-Z]+)\/([A-Z]+)$/) do |name, order_type, amount, symbol, price, ps1, ps2|
+When(/^(\w+) submits? (bid|ask) to sell ([\d,\.]+) ([A-Z]+) at ([\d\.]+) ([A-Z]+)\/([A-Z]+)$/) do |name, order_type, amount, symbol, price, ps1, ps2|
   actor = get_actor(name)
   #actor.node.exec 'rescan'
   data = actor.node.exec 'wallet_account_balance', actor.account
   balance = get_balance(data, actor.account, symbol)
   puts "#{actor.account}'s balance: #{balance} #{symbol}"
+  amount = to_f(amount)
   if order_type == 'bid'
     actor.node.exec 'wallet_market_submit_bid', actor.account, amount, symbol, price, ps2
   elsif order_type == 'ask'
@@ -33,11 +34,11 @@ When(/^I cover last ([A-Z]+) margin order in full$/) do |symbol|
   @current_actor.node.exec 'wallet_market_cover', @current_actor.account, 0, symbol, @last_order_id
 end
 
-Then(/^Bob's balance should increase by (\d+) USD$/) do |arg1|
+Then(/^Bob's balance should increase by ([\d,\.]+) USD$/) do |arg1|
   pending # express the regexp above with the code you wish you had
 end
 
-Then(/^(\w+) should spot the following ([A-Z]+)\/([A-Z]+) market orders?:$/) do |name, symbol1, symbol2, orders_table|
+Then(/^(\w+) should have the following ([A-Z]+)\/([A-Z]+) market orders?:$/) do |name, symbol1, symbol2, orders_table|
   actor = get_actor(name)
   orders_table.hashes.each do |o|
     orders = actor.node.exec 'wallet_market_order_list', symbol1, symbol2, 0

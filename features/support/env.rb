@@ -5,7 +5,7 @@ require './testnet.rb'
 Actor = Struct.new(:node, :account) do
 end
 
-class ApiHelper
+class Helper
 
   def initialize
     @logger = Logger.new('features.log')
@@ -78,6 +78,10 @@ class ApiHelper
     @testnet.delegate_node.wait_new_block
   end
 
+  def to_f(n)
+    n.gsub(',','').to_f
+  end
+
 end
 
 Before('@pause') do
@@ -112,4 +116,4 @@ After do |scenario|
 end
 
 World( RSpec::Matchers )
-World{ ApiHelper.new }
+World{ Helper.new }
