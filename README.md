@@ -9,12 +9,14 @@ Install Ruby:
 
 On Linux I recommend to use rvm to install Ruby, here is how to do this on Ubuntu:
 
+``` bash
   $ sudo apt-get install libgdbm-dev libncurses5-dev automake libtool bison libffi-dev
   $ curl -L https://get.rvm.io | bash -s stable
   $ source ~/.rvm/scripts/rvm
   $ echo "source ~/.rvm/scripts/rvm" >> ~/.bashrc
   $ rvm install 2.1.3
   $ rvm use 2.1.3 --default
+```
 
 
 On OS X you can install it via brew:
@@ -34,7 +36,6 @@ Next define environment variable BTS_BUILD with path to your bitshares toolkit's
   $ export BTS_BUILD=/home/user/bitshares/bitshares_toolkit
   
   
-  
 ## Usage
   
 Bootstrap the test net:
@@ -52,7 +53,6 @@ Or specifying a feature to run:
 Or tag:
 
   $ cucumber -t @current
-
 
 
 ### Note
