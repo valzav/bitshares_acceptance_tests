@@ -37,6 +37,7 @@ module BitShares
       clientnode = BitSharesNode.new @client_binary, name: dir, data_dir: td(dir), genesis: 'genesis.json', http_port: port, p2p_port: @p2p_port, logger: @logger
       clientnode.start(false)
       if create_wallet
+        clientnode.exec 'enable_raw'
         clientnode.exec 'wallet_create', 'default', '123456789'
         clientnode.exec 'wallet_unlock', '9999999', '123456789'
       end
@@ -89,11 +90,9 @@ module BitShares
 
       @delegate_node.exec 'wallet_backup_create', td('delegate_wallet_backup.json')
 
-      #@alice_node = create_client_node('alice', 5691)
       @alice_node.exec 'wallet_import_private_key', balancekeys[2], 'angel', true, true
       @alice_node.exec 'wallet_backup_create', td('alice_wallet_backup.json')
 
-      #@bob_node = create_client_node('bob', 5692)
       @bob_node.exec 'wallet_import_private_key', balancekeys[3], 'angel', true, true
       @bob_node.exec 'wallet_backup_create', td('bob_wallet_backup.json')
     end
@@ -134,7 +133,9 @@ module BitShares
       @bob_node = BitSharesNode.new @client_binary, name: 'bob', data_dir: td('bob'), genesis: 'genesis.json', http_port: 5692, p2p_port: @p2p_port, logger: @logger
       @bob_node.start(false)
 
-      wait_nodes([@delegate_node, @alice_node, @bob_node])
+      nodes = [@delegate_node, @alice_node, @bob_node]
+      wait_nodes(nodes)
+      nodes.each{ |n| n.exec 'enable_raw' }
     end
 
     def create

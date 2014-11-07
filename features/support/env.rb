@@ -73,11 +73,6 @@ class Helper
     return false
   end
 
-  def wait
-    STDOUT.puts 'waiting next block'
-    @testnet.delegate_node.wait_new_block
-  end
-
   def to_f(n)
     n.gsub(',','').to_f
   end
@@ -114,6 +109,7 @@ After do |scenario|
   @pause = false
   STDOUT.puts 'shutting down testnet..'
   @testnet.shutdown
+  @testnet = nil
 end
 
 World( RSpec::Matchers )

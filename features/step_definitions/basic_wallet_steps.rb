@@ -22,7 +22,6 @@ end
 When(/^([\w]+) prints? ([A-Z]+) balance$/) do |name, symbol|
   actor = get_actor(name)
   data = @current_actor.node.exec 'wallet_account_balance', actor.account
-  STDOUT.puts data
   balance = get_balance(data, actor.account, symbol)
   puts "balance: #{balance} #{symbol}"
 end
